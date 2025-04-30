@@ -8,6 +8,8 @@ import {
     Platform,
     ScrollView,
     ImageBackground,
+    TouchableWithoutFeedback,
+    Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,10 +42,7 @@ function SignupScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.keyboardView}
         >
-            <ScrollView
-                contentContainerStyle={styles.scrollView}
-                keyboardShouldPersistTaps="handled"
-            >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ImageBackground source={require('../assets/bg_img.jpg')} style={styles.mainContainer}>
                     <View style={styles.container1}>
                         <Text style={styles.logo}>Group Save</Text>
@@ -107,7 +106,7 @@ function SignupScreen() {
                                             style={styles.gotAccount_sub}
                                             onPress={() => navigation.navigate('Signin')}
                                         >
-                                            Sign In
+                                            SignIn
                                         </Text>
                                     </Text>
                                 </View>
@@ -115,7 +114,7 @@ function SignupScreen() {
                         </Formik>
                     </View>
                 </ImageBackground>
-            </ScrollView>
+            </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     )
 }
@@ -148,20 +147,17 @@ const styles = StyleSheet.create({
     keyboardView: {
         flex: 1,
     },
-    scrollView: {
-        flexGrow: 1,
-    },
     mainContainer: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         backgroundColor: '#014131',
     },
     formContainer: {
         width: '100%',
     },
     container1: {
-        height: '40%',
+        flex: 1,
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
@@ -173,16 +169,15 @@ const styles = StyleSheet.create({
         color: '#ffffff',
     },
     container2: {
-        width: '90%',
+        width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#ffffff',
-        paddingHorizontal: 20,
-        paddingVertical: 30,
-        borderRadius: 10,
+        padding: 30,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
         borderWidth: 1,
         borderColor: '#ddd',
-        ...shadowStyles
     },
     title: {
         fontSize: 18,
@@ -196,7 +191,9 @@ const styles = StyleSheet.create({
     termsLink: {
         color: '#25292e',
         fontSize: 14,
-        marginVertical: 5,
+        marginTop: 10,
+        alignSelf: 'flex-end',
+        marginBottom: 10,
         textDecorationLine: 'underline',
         textDecorationStyle: 'solid',
         textDecorationColor: '#25292e',

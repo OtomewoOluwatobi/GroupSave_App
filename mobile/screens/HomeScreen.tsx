@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { View, Text, StyleSheet, ImageBackground } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 
 type RootStackParamList = {

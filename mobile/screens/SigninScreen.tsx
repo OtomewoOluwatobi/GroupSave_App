@@ -8,6 +8,8 @@ import {
     Platform,
     ScrollView,
     ImageBackground,
+    TouchableWithoutFeedback,
+    Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,63 +42,60 @@ const SigninScreen: React.FC = () => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.keyboardView}
         >
-            <ScrollView
-                contentContainerStyle={styles.scrollView}
-                keyboardShouldPersistTaps="handled"
-            >
-                <ImageBackground source={require('../assets/bg_img.jpg')} style={styles.mainContainer}>
-                    <View style={styles.container1}>
-                        <Text style={styles.logo}>Group Save</Text>
-                    </View>
-                    <View style={styles.container2}>
-                        <Text style={[styles.title, styles.titleAlign]}>Sign In</Text>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ImageBackground source={require('../assets/bg_img.jpg')} style={styles.mainContainer}>
+                        <View style={styles.container1}>
+                            <Text style={styles.logo}>Group Save</Text>
+                        </View>
+                        <View style={styles.container2}>
+                            <Text style={[styles.title, styles.titleAlign]}>Sign In</Text>
 
-                        <Formik
-                            initialValues={initialValues}
-                            validationSchema={validationSchema}
-                            onSubmit={handleFormSubmit}
-                        >
-                            {({ handleChange, handleSubmit, values, errors, touched }) => (
-                                <View style={styles.formContainer}>
-                                    <FormInput
-                                        field="email"
-                                        placeholder="Email"
-                                        value={values.email}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
-                                        touched={touched}
-                                        errors={errors}
-                                    />
-                                    <FormInput
-                                        field="password"
-                                        placeholder="Password"
-                                        value={values.password}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
-                                        touched={touched}
-                                        errors={errors}
-                                        secureTextEntry
-                                    />
+                            <Formik
+                                initialValues={initialValues}
+                                validationSchema={validationSchema}
+                                onSubmit={handleFormSubmit}
+                            >
+                                {({ handleChange, handleSubmit, values, errors, touched }) => (
+                                    <View style={styles.formContainer}>
+                                        <FormInput
+                                            field="email"
+                                            placeholder="Email"
+                                            value={values.email}
+                                            handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                            touched={touched}
+                                            errors={errors}
+                                        />
+                                        <FormInput
+                                            field="password"
+                                            placeholder="Password"
+                                            value={values.password}
+                                            handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                            touched={touched}
+                                            errors={errors}
+                                            secureTextEntry
+                                        />
 
-                                    <Text style={styles.forgotPassword}>Forgot Password ?</Text>
+                                        <Text style={styles.forgotPassword}>Forgot Password ?</Text>
 
-                                    <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                                        <Text style={styles.buttonText}>Sign In</Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
+                                            <Text style={styles.buttonText}>Sign In</Text>
+                                        </TouchableOpacity>
 
-                                    <Text style={styles.gotAccount}>
-                                        Already have an accout{' '}
-                                        <Text
-                                            style={styles.gotAccount_sub}
-                                            onPress={() => navigation.navigate('Signup')}
-                                        >
-                                            SignUp
+                                        <Text style={styles.gotAccount}>
+                                            Already have an accout{' '}
+                                            <Text
+                                                style={styles.gotAccount_sub}
+                                                onPress={() => navigation.navigate('Signup')}
+                                            >
+                                                SignUp
+                                            </Text>
                                         </Text>
-                                    </Text>
-                                </View>
-                            )}
-                        </Formik>
-                    </View>
-                </ImageBackground>
-            </ScrollView>
+                                    </View>
+                                )}
+                            </Formik>
+                        </View>
+                    </ImageBackground>
+            </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
 };
@@ -129,20 +128,17 @@ const styles = StyleSheet.create({
     keyboardView: {
         flex: 1,
     },
-    scrollView: {
-        flexGrow: 1,
-    },
     mainContainer: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         backgroundColor: '#014131',
     },
     formContainer: {
         width: '100%',
     },
     container1: {
-        height: '55%',
+        flex: 1,
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
@@ -154,16 +150,15 @@ const styles = StyleSheet.create({
         color: '#ffffff',
     },
     container2: {
-        width: '90%',
+        width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#ffffff',
-        paddingHorizontal: 20,
-        paddingVertical: 30,
-        borderRadius: 10,
+        padding: 30,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
         borderWidth: 1,
         borderColor: '#ddd',
-        ...shadowStyles
     },
     title: {
         fontSize: 18,
