@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform } from "react-native";
 import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet"; // Ensure this is the correct library for ActionSheet
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 function DashboardScree() {
     const [activeTab, setActiveTab] = React.useState('topGroups');
+    const actionSheetRef = React.useRef<ActionSheetRef>(null);
 
     return (
         <SafeAreaProvider>
@@ -18,9 +20,58 @@ function DashboardScree() {
                             <Text style={styles.title}>Lesley's Home</Text>
                             <Text style={styles.subtitle}>Welcome back!</Text>
                         </View>
-                        <TouchableOpacity style={styles.menuButton}>
+                        <TouchableOpacity
+                            style={styles.menuButton}
+                            onPress={() => actionSheetRef.current?.show()}
+                        >
                             <Feather name="menu" size={24} color="#444" />
                         </TouchableOpacity>
+                        <ActionSheet ref={actionSheetRef}>
+                            <View style={{ padding: 20 }}>
+                                <View style={styles.menuGrid}>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="cash-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Deposite</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="diamond-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Points</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="notifications-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Notifications</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="person-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Profile</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.menuGrid}>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="settings-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Settings</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="help-circle-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Support</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="shield-checkmark-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Security</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.menuGridItem}>
+                                        <Ionicons name="document-text-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>History</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TouchableOpacity style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: '#eee', marginTop: 10, paddingTop: 10, justifyContent: 'center', alignItems: 'center' }]} onPress={() => console.log('Sign Out')}>
+                                    <Ionicons name="log-out-outline" size={24} color="red" />
+                                    <Text style={{ color: 'red' }}>Sign Out</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ActionSheet>
                     </View>
                 </View>
                 {/* Balance Info */}
@@ -150,6 +201,13 @@ const shadowStyles = Platform.select({
 });
 
 const styles = StyleSheet.create({
+    profileName: { fontSize: 16, fontWeight: '600', color: '#333' },
+    profileDetail: { fontSize: 14, color: '#666', marginTop: 4 },
+    profileInfo: { flex: 1 },
+    menuGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginVertical: 10 },
+    menuGridItem: { alignItems: 'center', width: '25%', marginVertical: 10 },
+    menuGridText: { marginTop: 5, fontSize: 12, color: '#666' },
+    menuItem: { paddingVertical: 10, flexDirection: 'row', alignItems: 'center' },
     container: { flex: 1, backgroundColor: '#e8f3f5' },
     header: {
         flexDirection: 'row',
