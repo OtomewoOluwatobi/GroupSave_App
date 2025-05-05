@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform } from "react-native";
+import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 
 function DashboardScree() {
+    const [activeTab, setActiveTab] = React.useState('topGroups');
     return (
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -26,11 +27,11 @@ function DashboardScree() {
                 <View style={{ backgroundColor: '#fff', padding: 20, marginHorizontal: 20, marginBottom: 20 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 }}>
                         <View>
-                            <Text style={{ color: '#777', fontSize: 14 }}>Total Balance</Text>
+                            <Text style={{ color: '#777', fontSize: 14 }}>Target Amount</Text>
                             <Text style={{ fontSize: 24, fontWeight: '700', color: '#333', marginTop: 5 }}>₦250,000.00</Text>
                         </View>
                         <View>
-                            <Text style={{ color: '#777', fontSize: 14, textAlign: 'right' }}>Available Balance</Text>
+                            <Text style={{ color: '#777', fontSize: 14, textAlign: 'right' }}>Contributed Amount</Text>
                             <Text style={{ fontSize: 24, fontWeight: '700', color: '#00a97b', marginTop: 5 }}>₦120,500.00</Text>
                         </View>
                     </View>
@@ -39,69 +40,100 @@ function DashboardScree() {
                 {/* Top Groups */}
                 <View>
                     {/* Tab Headers */}
-                    <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 10 }}>
-                        <TouchableOpacity style={{ paddingVertical: 8, marginRight: 5, }}>
-                            <Text style={{ color: '#111', fontWeight: '600' }}>All Groups</Text>
+                    const [activeTab, setActiveTab] = useState('topGroups'); // Add this at the top with other hooks
+                    <View style={{ flexDirection: 'row', marginHorizontal: 20, }}>
+                        <TouchableOpacity
+                            onPress={() => setActiveTab('topGroups')}
+                            style={{ paddingVertical: 8, marginRight: 5 }}>
+                            <Text style={{
+                                color: activeTab === 'topGroups' ? '#00a97b' : '#111',
+                                fontWeight: '600'
+                            }}>Top Groups</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={{ paddingVertical: 8, marginLeft: 5, }}>
-                            <Text style={{ color: '#00a97b', fontWeight: '600' }}>My Groups</Text>
+                        <TouchableOpacity
+                            onPress={() => setActiveTab('myGroup')}
+                            style={{ paddingVertical: 8, marginLeft: 5 }}>
+                            <Text style={{
+                                color: activeTab === 'myGroup' ? '#00a97b' : '#111',
+                                fontWeight: '600'
+                            }}>My Groups</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* All Groups Tab Content */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 10, marginHorizontal: 20 }}>
-                        {[1, 2, 3].map((item) => (
-                            <TouchableOpacity key={item} style={{
-                                backgroundColor: '#00a97b',
-                                padding: 15,
-                                marginRight: 15,
-                                width: 200,
-                            }}>
-                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#e8f3f5' }}>Group {item}</Text>
-                                <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 5 }}>₦50,000.00</Text>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-                                    <View>
-                                        <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Duration</Text>
-                                        <Text style={{ color: '#eefdf7', fontSize: 14 }}>3 months</Text>
+                    {activeTab === 'topGroups' && (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 10, marginHorizontal: 20 }}>
+                            {[1, 2, 3].map((item) => (
+                                <TouchableOpacity key={item} style={{
+                                    backgroundColor: '#00a97b',
+                                    padding: 15,
+                                    marginRight: 15,
+                                    width: 200,
+                                    ...shadowStyles,
+                                }}>
+                                    <Text style={{ fontSize: 18, fontWeight: '600', color: '#e8f3f5' }}>Group {item}</Text>
+                                    <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 5 }}>₦50,000.00</Text>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+                                        <View>
+                                            <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Duration</Text>
+                                            <Text style={{ color: '#eefdf7', fontSize: 14 }}>3 months</Text>
+                                        </View>
+                                        <View>
+                                            <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Members</Text>
+                                            <Text style={{ color: '#eefdf7', fontSize: 14 }}>12/15</Text>
+                                        </View>
                                     </View>
-                                    <View>
-                                        <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Members</Text>
-                                        <Text style={{ color: '#eefdf7', fontSize: 14 }}>12/15</Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    )}
 
-                    {/* My Groups Tab Content (hidden by default) */}
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ display: 'none', paddingVertical: 10, marginHorizontal: 20 }}>
-                        {[1, 2].map((item) => (
-                            <TouchableOpacity key={item} style={{
-                                backgroundColor: '#00a97b',
+                    {/* My Groups Tab Content */}
+                    {activeTab === 'myGroup' && (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 10, marginHorizontal: 20, }}>
+                            {[].map((item) => (
+                                <TouchableOpacity key={item} style={{
+                                    backgroundColor: '#00a97b',
+                                    padding: 15,
+                                    marginRight: 15,
+                                    width: 200,
+                                    ...shadowStyles
+                                }}>
+                                    <Text style={{ fontSize: 18, fontWeight: '600', color: '#e8f3f5' }}>My Group {item}</Text>
+                                    <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 5 }}>₦3,000.00</Text>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+                                        <View>
+                                            <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Duration</Text>
+                                            <Text style={{ color: '#eefdf7', fontSize: 14 }}>2 months</Text>
+                                        </View>
+                                        <View>
+                                            <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Members</Text>
+                                            <Text style={{ color: '#eefdf7', fontSize: 14 }}>8/10</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                            <TouchableOpacity style={{
+                                backgroundColor: '#111',
                                 padding: 15,
                                 marginRight: 15,
-                                width: 200,
+                                height: 70,
+                                width: 70,
+                                alignSelf: 'center',
+                                borderRadius: 50,
+                                justifyContent: 'center', // Added to center vertically
+                                alignItems: 'center', // Added to center horizontally
+                                ...shadowStyles
                             }}>
-                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#e8f3f5' }}>My Group {item}</Text>
-                                <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff', marginTop: 5 }}>₦3,000.00</Text>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-                                    <View>
-                                        <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Duration</Text>
-                                        <Text style={{ color: '#eefdf7', fontSize: 14 }}>2 months</Text>
-                                    </View>
-                                    <View>
-                                        <Text style={{ color: '#e8f3f5', fontSize: 12 }}>Members</Text>
-                                        <Text style={{ color: '#eefdf7', fontSize: 14 }}>8/10</Text>
-                                    </View>
-                                </View>
+                                <MaterialIcons name="format-list-bulleted-add" size={30} color="#fff" />
                             </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                        </ScrollView>
+                    )}
                 </View>
 
                 {/* Recent Transactions */}
                 <View style={{ marginVertical: 5, }}>
-                    <Text style={styles.sectionTitle}>Recent Transactions</Text>
+                    <Text style={[styles.sectionTitle, { fontWeight: 'bold' }]}>Recent Transactions</Text>
                     <ScrollView style={{ backgroundColor: '#fff', marginHorizontal: 20, marginVertical: 10, padding: 15, maxHeight: 500 }} showsVerticalScrollIndicator={false}>
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
                             <View key={item} style={{
@@ -134,6 +166,18 @@ function DashboardScree() {
         </ScrollView>
     );
 }
+
+const shadowStyles = Platform.select({
+    ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    },
+    android: {
+        elevation: 5,
+    },
+});
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#e8f3f5' },
