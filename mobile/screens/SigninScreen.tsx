@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -6,21 +6,20 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    ScrollView,
     ImageBackground,
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Formik, FormikErrors, FormikTouched } from 'formik';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import FormInput from '../components/FormInput';
 
 type RootStackParamList = {
     Signin: undefined;
     Signup: undefined;
 };
-import * as Yup from 'yup';
-import FormInput from '../components/FormInput';
 
 const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email').required('Email is required'),
@@ -33,6 +32,7 @@ const SigninScreen: React.FC = () => {
         email: '',
         password: '',
     };
+
     const handleFormSubmit = (values: typeof initialValues) => {
         console.log(values);
     };
@@ -43,58 +43,58 @@ const SigninScreen: React.FC = () => {
             style={styles.keyboardView}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ImageBackground source={require('../assets/bg_img.jpg')} style={styles.mainContainer}>
-                        <View style={styles.container1}>
-                            <Text style={styles.logo}>Group Save</Text>
-                        </View>
-                        <View style={styles.container2}>
-                            <Text style={[styles.title, styles.titleAlign]}>Sign In</Text>
+                <ImageBackground source={require('../assets/bg_img.jpg')} style={styles.mainContainer}>
+                    <View style={styles.container1}>
+                        <Text style={styles.logo}>Group Save</Text>
+                    </View>
+                    <View style={styles.container2}>
+                        <Text style={[styles.title, styles.titleAlign]}>Sign In</Text>
 
-                            <Formik
-                                initialValues={initialValues}
-                                validationSchema={validationSchema}
-                                onSubmit={handleFormSubmit}
-                            >
-                                {({ handleChange, handleSubmit, values, errors, touched }) => (
-                                    <View style={styles.formContainer}>
-                                        <FormInput
-                                            field="email"
-                                            placeholder="Email"
-                                            value={values.email}
-                                            handleChange={(field: string) => (value: string) => handleChange(field)(value)}
-                                            touched={touched}
-                                            errors={errors}
-                                        />
-                                        <FormInput
-                                            field="password"
-                                            placeholder="Password"
-                                            value={values.password}
-                                            handleChange={(field: string) => (value: string) => handleChange(field)(value)}
-                                            touched={touched}
-                                            errors={errors}
-                                            secureTextEntry
-                                        />
+                        <Formik
+                            initialValues={initialValues}
+                            validationSchema={validationSchema}
+                            onSubmit={handleFormSubmit}
+                        >
+                            {({ handleChange, handleSubmit, values, errors, touched }) => (
+                                <View style={styles.formContainer}>
+                                    <FormInput
+                                        field="email"
+                                        placeholder="Email"
+                                        value={values.email}
+                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        touched={touched}
+                                        errors={errors}
+                                    />
+                                    <FormInput
+                                        field="password"
+                                        placeholder="Password"
+                                        value={values.password}
+                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        touched={touched}
+                                        errors={errors}
+                                        secureTextEntry
+                                    />
 
-                                        <Text style={styles.forgotPassword}>Forgot Password ?</Text>
+                                    <Text style={styles.forgotPassword}>Forgot Password ?</Text>
 
-                                        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                                            <Text style={styles.buttonText}>Sign In</Text>
-                                        </TouchableOpacity>
+                                    <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
+                                        <Text style={styles.buttonText}>Sign In</Text>
+                                    </TouchableOpacity>
 
-                                        <Text style={styles.gotAccount}>
-                                            Already have an accout{' '}
-                                            <Text
-                                                style={styles.gotAccount_sub}
-                                                onPress={() => navigation.navigate('Signup')}
-                                            >
-                                                SignUp
-                                            </Text>
+                                    <Text style={styles.gotAccount}>
+                                        Already have an account{' '}
+                                        <Text
+                                            style={styles.gotAccount_sub}
+                                            onPress={() => navigation.navigate('Signup')}
+                                        >
+                                            SignUp
                                         </Text>
-                                    </View>
-                                )}
-                            </Formik>
-                        </View>
-                    </ImageBackground>
+                                    </Text>
+                                </View>
+                            )}
+                        </Formik>
+                    </View>
+                </ImageBackground>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
@@ -176,8 +176,6 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-end',
         marginBottom: 10,
         textDecorationLine: 'underline',
-        textDecorationStyle: 'solid',
-        textDecorationColor: '#25292e',
     },
     gotAccount: {
         color: '#25292e',
@@ -190,22 +188,7 @@ const styles = StyleSheet.create({
         color: '#FFB850',
         fontSize: 14,
         fontWeight: 'bold',
-        marginTop: 20,
-        alignSelf: 'center',
-        marginBottom: 5,
         textDecorationLine: 'underline',
-        textDecorationStyle: 'solid',
-        textDecorationColor: '#FFB850',
-    },
-    input: {
-        width: '100%',
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        marginVertical: 10,
-        paddingHorizontal: 10,
-        backgroundColor: 'white',
-        ...inputShadow,
     },
     button: {
         backgroundColor: '#25292e',
@@ -218,10 +201,6 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 16,
-    },
-    error: {
-        color: 'red',
-        fontSize: 12,
     },
 });
 

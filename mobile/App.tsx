@@ -14,11 +14,11 @@ export default function App() {
     <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Dashboard" screenOptions={{ gestureEnabled: false }}>
-        <Stack.Screen name="Dashboard" component={DashboardScree} options={{ headerShown: false }} />
-        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+        <Stack.Navigator initialRouteName="Home" screenOptions={{ gestureEnabled: false }}>
+          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Signin" component={SigninScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Dashboard" component={DashboardScree} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>
