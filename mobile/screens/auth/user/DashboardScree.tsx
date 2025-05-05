@@ -8,38 +8,36 @@ function DashboardScree() {
 
     return (
         <SafeAreaProvider>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.container}>
-                    {/* Status Bar */}
-                    <StatusBar barStyle="dark-content" />
-
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <View style={styles.headerContent}>
-                            <View style={styles.headerTextContainer}>
-                                <Text style={styles.title}>Lesley's Home</Text>
-                                <Text style={styles.subtitle}>Welcome back!</Text>
-                            </View>
-                            <TouchableOpacity style={styles.menuButton}>
-                                <Feather name="menu" size={24} color="#444" />
-                            </TouchableOpacity>
+            {/* Status Bar */}
+            <StatusBar barStyle="dark-content" />
+            <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <View style={styles.headerContent}>
+                        <View style={styles.headerTextContainer}>
+                            <Text style={styles.title}>Lesley's Home</Text>
+                            <Text style={styles.subtitle}>Welcome back!</Text>
+                        </View>
+                        <TouchableOpacity style={styles.menuButton}>
+                            <Feather name="menu" size={24} color="#444" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                {/* Balance Info */}
+                <View style={styles.balanceInfo}>
+                    <View style={styles.balanceRow}>
+                        <View>
+                            <Text style={styles.balanceLabel}>Target Amount</Text>
+                            <Text style={styles.balanceValue}>₦250,000.00</Text>
+                        </View>
+                        <View>
+                            <Text style={[styles.balanceLabel, styles.textRight]}>Contributed Amount</Text>
+                            <Text style={[styles.balanceValue, styles.contributedAmount]}>₦120,500.00</Text>
                         </View>
                     </View>
+                </View>
 
-                    {/* Balance Info */}
-                    <View style={styles.balanceInfo}>
-                        <View style={styles.balanceRow}>
-                            <View>
-                                <Text style={styles.balanceLabel}>Target Amount</Text>
-                                <Text style={styles.balanceValue}>₦250,000.00</Text>
-                            </View>
-                            <View>
-                                <Text style={[styles.balanceLabel, styles.textRight]}>Contributed Amount</Text>
-                                <Text style={[styles.balanceValue, styles.contributedAmount]}>₦120,500.00</Text>
-                            </View>
-                        </View>
-                    </View>
-
+                <ScrollView showsVerticalScrollIndicator={false}>
                     {/* Top Groups */}
                     <View>
                         {/* Tab Headers */}
@@ -133,8 +131,8 @@ function DashboardScree() {
                             ))}
                         </ScrollView>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
         </SafeAreaProvider>
     );
 }
