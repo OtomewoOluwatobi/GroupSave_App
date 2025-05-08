@@ -10,15 +10,19 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import FormInput from '../components/FormInput';
 
+
 type RootStackParamList = {
     Signin: undefined;
     Signup: undefined;
+    Dashboard: undefined;
 };
 
 const validationSchema = Yup.object({
@@ -29,12 +33,29 @@ const validationSchema = Yup.object({
 const SigninScreen: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const initialValues = {
-        email: '',
-        password: '',
+        email: 'otomewooluwatobi@gmail.com',
+        password: 'password@123',
     };
 
-    const handleFormSubmit = (values: typeof initialValues) => {
-        console.log(values);
+    const handleFormSubmit = async (values: typeof initialValues) => {
+        const userData = {
+            email: values.email,
+            password: values.password,
+        };
+        // Make API call to sign in
+        try {
+            const apiUrl = "https://groupsave-main-7jvzme.laravel.cloud/api";
+            const response = await axios.post(`${apiUrl}/auth/login`, userData);
+            if (response.status === 200) {
+                const data = response.data as { token: string, user: string };
+                await AsyncStorage.setItem('token', data.token);
+                await AsyncStorage.setItem('user', JSON.stringify(data.user));
+                // Navigate to the dashboard screen
+                navigation.navigate('Dashboard');
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (
@@ -61,7 +82,7 @@ const SigninScreen: React.FC = () => {
                                         field="email"
                                         placeholder="Email"
                                         value={values.email}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        handleChange={handleChange('email')}
                                         touched={touched}
                                         errors={errors}
                                     />
@@ -69,7 +90,7 @@ const SigninScreen: React.FC = () => {
                                         field="password"
                                         placeholder="Password"
                                         value={values.password}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        handleChange={handleChange('password')}
                                         touched={touched}
                                         errors={errors}
                                         secureTextEntry

@@ -1,12 +1,37 @@
 import React, { useState } from "react";
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform } from "react-native";
 import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet"; // Ensure this is the correct library for ActionSheet
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-function DashboardScree() {
+
+type RootStackParamList = {
+    Home: undefined;
+    Signin: undefined;
+    Signup: undefined;
+    Dashboard: undefined;
+};
+
+const DashboardScree: React.FC = () => {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [activeTab, setActiveTab] = React.useState('topGroups');
     const actionSheetRef = React.useRef<ActionSheetRef>(null);
+
+    const handleSignOut = async () => {
+        try {
+            await AsyncStorage.removeItem('token');
+            await AsyncStorage.removeItem('user');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+            });
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    };
 
     return (
         <SafeAreaProvider>
@@ -66,9 +91,15 @@ function DashboardScree() {
                                     </TouchableOpacity>
                                 </View>
 
-                                <TouchableOpacity style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: '#eee', marginTop: 10, paddingTop: 10, justifyContent: 'center', alignItems: 'center' }]} onPress={() => console.log('Sign Out')}>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.menuItem,
+                                        styles.signOutButton
+                                    ]}
+                                    onPress={handleSignOut}
+                                >
                                     <Ionicons name="log-out-outline" size={24} color="red" />
-                                    <Text style={{ color: 'red' }}>Sign Out</Text>
+                                    <Text style={styles.signOutText}>Sign Out</Text>
                                 </TouchableOpacity>
                             </View>
                         </ActionSheet>
@@ -201,6 +232,8 @@ const shadowStyles = Platform.select({
 });
 
 const styles = StyleSheet.create({
+    signOutButton: { marginTop: 20, borderTopWidth: 1, justifyContent: 'center', borderTopColor: '#eee', paddingTop: 20 },
+    signOutText: { color: 'red', marginLeft: 10 },
     profileName: { fontSize: 16, fontWeight: '600', color: '#333' },
     profileDetail: { fontSize: 14, color: '#666', marginTop: 4 },
     profileInfo: { flex: 1 },
