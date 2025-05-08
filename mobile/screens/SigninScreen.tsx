@@ -16,6 +16,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import Toast from 'react-native-toast-message';
+
 import FormInput from '../components/FormInput';
 
 
@@ -45,16 +47,50 @@ const SigninScreen: React.FC = () => {
         // Make API call to sign in
         try {
             const apiUrl = "https://groupsave-main-7jvzme.laravel.cloud/api";
-            const response = await axios.post(`${apiUrl}/auth/login`, userData);
-            if (response.status === 200) {
-                const data = response.data as { token: string, user: string };
-                await AsyncStorage.setItem('token', data.token);
-                await AsyncStorage.setItem('user', JSON.stringify(data.user));
-                // Navigate to the dashboard screen
-                navigation.navigate('Dashboard');
+            interface SigninResponse {
+                token: string;
+                user: any;
             }
-        } catch (error) {
-            console.log(error);
+            const response = await axios.post<SigninResponse>(`${apiUrl}/auth/login`, userData);
+
+            if (response.data && response.data.token) {
+                // Store the token and user data
+                await AsyncStorage.setItem('token', response.data.token);
+                await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+
+                // Navigate to dashboard
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Dashboard' }],
+                });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: 'Invalid response from server',
+                });
+            }
+        } catch (error: any) {
+            console.error('Sign in error:', error.response?.data);
+
+            // Handle different error scenarios
+            if ((error as any).isAxiosError) {
+                const errorMessage = error.response?.data?.message
+                    || error.response?.data?.error
+                    || 'Invalid credentials';
+
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: errorMessage,
+                });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: 'Network error. Please check your connection.',
+                });
+            }
         }
     };
 

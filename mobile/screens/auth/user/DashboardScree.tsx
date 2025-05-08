@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform } from "react-native";
 import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet"; // Ensure this is the correct library for ActionSheet
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 
 type RootStackParamList = {
     Home: undefined;
@@ -17,13 +16,27 @@ type RootStackParamList = {
 
 const DashboardScree: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const [activeTab, setActiveTab] = React.useState('topGroups');
+    const [activeTab, setActiveTab] = useState('topGroups');
+    const [user, setUser] = useState<{ name?: string } | null>(null);
     const actionSheetRef = React.useRef<ActionSheetRef>(null);
+
+    // Fetch user data on load
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userData = await AsyncStorage.getItem('user');
+                if (userData) {
+                    setUser(JSON.parse(userData));
+                }
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const handleSignOut = async () => {
         actionSheetRef.current?.hide();
-        // Clear AsyncStorage and navigate to Home
-        // You can also use a try-catch block to handle any errors
         try {
             await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('user');
@@ -38,15 +51,15 @@ const DashboardScree: React.FC = () => {
 
     return (
         <SafeAreaProvider>
-            {/* Status Bar */}
             <StatusBar barStyle="dark-content" />
             <View style={styles.container}>
-                {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <View style={styles.headerTextContainer}>
-                            <Text style={styles.title}>Lesley's Home</Text>
-                            <Text style={styles.subtitle}>Welcome back!</Text>
+                            <Text style={styles.title}>
+                                Hi {user?.name ? user.name.split(" ")[0].charAt(0).toUpperCase() + user.name.split(" ")[0].slice(1) : ''},
+                            </Text>
+                            <Text style={[styles.subtitle, {fontWeight: 'bold'}]}>Welcome back!</Text>
                         </View>
                         <TouchableOpacity
                             style={styles.menuButton}
@@ -74,7 +87,6 @@ const DashboardScree: React.FC = () => {
                                         <Text style={styles.menuGridText}>Profile</Text>
                                     </TouchableOpacity>
                                 </View>
-
                                 <View style={styles.menuGrid}>
                                     <TouchableOpacity style={styles.menuGridItem}>
                                         <Ionicons name="settings-outline" size={24} color="#00a97b" />
@@ -93,7 +105,6 @@ const DashboardScree: React.FC = () => {
                                         <Text style={styles.menuGridText}>History</Text>
                                     </TouchableOpacity>
                                 </View>
-
                                 <TouchableOpacity
                                     style={[styles.menuItem, styles.signOutButton]}
                                     onPress={handleSignOut}
@@ -105,7 +116,6 @@ const DashboardScree: React.FC = () => {
                         </ActionSheet>
                     </View>
                 </View>
-                {/* Balance Info */}
                 <View style={styles.balanceInfo}>
                     <View style={styles.balanceRow}>
                         <View>
@@ -118,11 +128,8 @@ const DashboardScree: React.FC = () => {
                         </View>
                     </View>
                 </View>
-
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    {/* Top Groups */}
                     <View>
-                        {/* Tab Headers */}
                         <View style={styles.tabHeaders}>
                             <TouchableOpacity
                                 onPress={() => setActiveTab('topGroups')}
@@ -141,8 +148,6 @@ const DashboardScree: React.FC = () => {
                                 ]}>My Groups</Text>
                             </TouchableOpacity>
                         </View>
-
-                        {/* All Groups Tab Content */}
                         {activeTab === 'topGroups' && (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
                                 {[1, 2, 3].map((item) => (
@@ -163,8 +168,6 @@ const DashboardScree: React.FC = () => {
                                 ))}
                             </ScrollView>
                         )}
-
-                        {/* My Groups Tab Content */}
                         {activeTab === 'myGroup' && (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
                                 {[1].map((item) => (
@@ -189,8 +192,6 @@ const DashboardScree: React.FC = () => {
                             </ScrollView>
                         )}
                     </View>
-
-                    {/* Recent Transactions */}
                     <View style={styles.recentTransactions}>
                         <Text style={[styles.sectionTitle, styles.boldText]}>Recent Transactions</Text>
                         <ScrollView style={styles.transactionsList} showsVerticalScrollIndicator={false}>
