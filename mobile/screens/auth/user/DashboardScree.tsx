@@ -21,12 +21,15 @@ const DashboardScree: React.FC = () => {
     const actionSheetRef = React.useRef<ActionSheetRef>(null);
 
     const handleSignOut = async () => {
+        actionSheetRef.current?.hide();
+        // Clear AsyncStorage and navigate to Home
+        // You can also use a try-catch block to handle any errors
         try {
             await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('user');
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'Home' }],
+                routes: [{ name: 'Signin' }],
             });
         } catch (error) {
             console.error('Error signing out:', error);
@@ -82,8 +85,8 @@ const DashboardScree: React.FC = () => {
                                         <Text style={styles.menuGridText}>Support</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="shield-checkmark-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Security</Text>
+                                        <Ionicons name="share-outline" size={24} color="#00a97b" />
+                                        <Text style={styles.menuGridText}>Referral</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.menuGridItem}>
                                         <Ionicons name="document-text-outline" size={24} color="#00a97b" />
@@ -92,10 +95,7 @@ const DashboardScree: React.FC = () => {
                                 </View>
 
                                 <TouchableOpacity
-                                    style={[
-                                        styles.menuItem,
-                                        styles.signOutButton
-                                    ]}
+                                    style={[styles.menuItem, styles.signOutButton]}
                                     onPress={handleSignOut}
                                 >
                                     <Ionicons name="log-out-outline" size={24} color="red" />

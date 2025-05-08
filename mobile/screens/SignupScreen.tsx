@@ -55,7 +55,7 @@ function SignupScreen() {
                             validationSchema={validationSchema}
                             onSubmit={handleFormSubmit}
                         >
-                            {({ handleChange, handleSubmit, values, errors, touched }) => (
+                            {({ handleChange, handleSubmit, values, errors, touched, isSubmitting }) => (
                                 <View style={styles.formContainer}>
                                     <FormInput
                                         field="fullname"
@@ -96,8 +96,12 @@ function SignupScreen() {
 
                                     <Text style={styles.termsLink}>I've agreed to terms and conditions</Text>
 
-                                    <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                                        <Text style={styles.buttonText}>Sign Up</Text>
+                                    <TouchableOpacity
+                                        style={[styles.button, isSubmitting && { opacity: 0.6 }]}
+                                        onPress={() => handleSubmit()}
+                                        disabled={isSubmitting}
+                                    >
+                                        <Text style={styles.buttonText}>{isSubmitting ? 'Signing Up...' : 'Sign Up'}</Text>
                                     </TouchableOpacity>
 
                                     <Text style={styles.gotAccount}>

@@ -76,7 +76,7 @@ const SigninScreen: React.FC = () => {
                             validationSchema={validationSchema}
                             onSubmit={handleFormSubmit}
                         >
-                            {({ handleChange, handleSubmit, values, errors, touched }) => (
+                            {({ handleChange, handleSubmit, values, errors, touched, isSubmitting }) => (
                                 <View style={styles.formContainer}>
                                     <FormInput
                                         field="email"
@@ -98,8 +98,14 @@ const SigninScreen: React.FC = () => {
 
                                     <Text style={styles.forgotPassword}>Forgot Password ?</Text>
 
-                                    <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
-                                        <Text style={styles.buttonText}>Sign In</Text>
+                                    <TouchableOpacity
+                                        style={styles.button}
+                                        onPress={() => handleSubmit()}
+                                        disabled={isSubmitting}
+                                    >
+                                        <Text style={styles.buttonText}>
+                                            {isSubmitting ? 'Signing In...' : 'Sign In'}
+                                        </Text>
                                     </TouchableOpacity>
 
                                     <Text style={styles.gotAccount}>
