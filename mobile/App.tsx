@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Toast, { BaseToast, BaseToastProps, ErrorToast } from 'react-native-toast-message';
+import { AlertNotificationRoot } from 'react-native-alert-notification';
 
 import HomeScreen from './screens/HomeScreen';
 import SigninScreen from './screens/SigninScreen';
@@ -60,24 +61,26 @@ export default function App() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar barStyle="light-content" />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName="Home"
-        >
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Signin" component={SigninScreen} />
-          <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen
-            name="Dashboard"
-            component={DashboardScreen}
-            options={{ gestureEnabled: false }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-      <Toast config={toastConfig} />
-    </View>
+    <AlertNotificationRoot>
+      <View style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" />
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{ headerShown: false }}
+            initialRouteName="Home"
+          >
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Signin" component={SigninScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
+            <Stack.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+              options={{ gestureEnabled: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+        <Toast config={toastConfig} />
+      </View>
+    </AlertNotificationRoot>
   );
 }

@@ -202,7 +202,7 @@ const DashboardScree: React.FC = () => {
                                 ]}>
                                     <View style={styles.transactionDetails}>
                                         <View style={styles.transactionIcon}>
-                                            <Ionicons name="arrow-down" size={20} color="#00a97b" />
+                                            <Ionicons name="arrow-down" size={20} color="#fff" />
                                         </View>
                                         <View style={styles.transactionText}>
                                             <Text style={styles.transactionTitle}>Group Contribution</Text>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     transactionItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 15 },
     transactionItemBorder: { borderBottomWidth: 1, borderBottomColor: '#eee' },
     transactionDetails: { flexDirection: 'row', alignItems: 'center' },
-    transactionIcon: { backgroundColor: '#e8f3f5', padding: 10, borderRadius: 25 },
+    transactionIcon: { backgroundColor: '#444', padding: 10, borderRadius: 25 },
     transactionText: { marginLeft: 15 },
     transactionTitle: { fontSize: 16, fontWeight: '600', color: '#333' },
     transactionDate: { color: '#777', marginTop: 4 },

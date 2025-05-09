@@ -6,11 +6,12 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    ScrollView,
     ImageBackground,
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
+import axios from 'axios';
+import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Formik } from 'formik';
@@ -21,21 +22,82 @@ type RootStackParamList = {
 };
 import * as Yup from 'yup';
 import FormInput from '../components/FormInput';
+import Toast from 'react-native-toast-message';
 
 const validationSchema = Yup.object({
+    name: Yup.string().required('Full name is required'),
+    mobile: Yup.string()
+        .matches(/^[0-9]+$/, 'Mobile number must be digits')
+        .min(10, 'Mobile number must be at least 10 digits')
+        .max(15, 'Mobile number must be at most 15 digits')
+        .required('Mobile number is required'),
     email: Yup.string().email('Invalid email').required('Email is required'),
     password: Yup.string().min(6, 'Min 6 characters').required('Password is required'),
+    password_confirmation: Yup.string()
+        .oneOf([Yup.ref('password')], 'Passwords must match')
+        .required('Password confirmation is required'),
 });
 function SignupScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const initialValues = {
-        fullname: '',
-        email: '',
-        mobile: '',
-        password: '',
+        name: "oluwatobi otomewo",
+        email: "otomewooluwatobi@gmail.com",
+        mobile: "07490257169",
+        password: "password@123",
+        password_confirmation: "password@123"
     };
-    const handleFormSubmit = (values: typeof initialValues) => {
-        console.log(values);
+    const handleFormSubmit = (values: typeof initialValues, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
+        const userData = {
+            name: values.name,
+            email: values.email,
+            mobile: values.mobile,
+            password: values.password,
+            password_confirmation: values.password_confirmation
+        }; 
+        // Make API call to sign up
+        const apiUrl = "https://groupsave-main-7jvzme.laravel.cloud/api";
+
+        axios.post<{ message: string }>(`${apiUrl}/auth/register`, userData)
+            .then(response => {
+
+                if (response.status === 201) {
+                    Dialog.show({
+                        type: ALERT_TYPE.SUCCESS,
+                        title: 'Registration Successful',
+                        textBody: response.data.message || 'Your account has been created.',
+                        button: 'Close',
+                    });
+                    // Optional: Navigate to signin after successful registration
+                    // navigation.navigate('Signin');
+                } else if (response.status === 400) {
+                    Dialog.show({
+                        type: ALERT_TYPE.DANGER,
+                        title: 'Registration Failed',
+                        textBody: response.data.message || 'Bad request.',
+                        button: 'Close',
+                    });
+                }
+                setSubmitting(false);
+            })
+            .catch(error => {
+                console.error('Registration error:', error.response?.data);
+                if (error.response && error.response.data && error.response.data.error) {
+                    Dialog.show({
+                        type: ALERT_TYPE.DANGER,
+                        title: 'Registration Failed',
+                        textBody: error.response.data.message || 'An error occurred during registration.',
+                        button: 'Close',
+                    });
+                } else {
+                    Dialog.show({
+                        type: ALERT_TYPE.DANGER,
+                        title: 'Registration Error',
+                        textBody: error.message || 'An unknown error occurred.',
+                        button: 'Close',
+                    });
+                }
+                setSubmitting(false);
+            });
     };
     return (
         <KeyboardAvoidingView
@@ -55,13 +117,15 @@ function SignupScreen() {
                             validationSchema={validationSchema}
                             onSubmit={handleFormSubmit}
                         >
-                            {({ handleChange, handleSubmit, values, errors, touched, isSubmitting }) => (
+                            {(formikProps) => {
+                                const { handleChange, handleSubmit, values, errors, touched, isSubmitting } = formikProps;
+                                return (
                                 <View style={styles.formContainer}>
                                     <FormInput
-                                        field="fullname"
+                                        field="name"
                                         placeholder="Full Name"
-                                        value={values.fullname}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        value={values.name}
+                                        handleChange={handleChange('name')}
                                         touched={touched}
                                         errors={errors}
                                     />
@@ -69,7 +133,7 @@ function SignupScreen() {
                                         field="email"
                                         placeholder="Email"
                                         value={values.email}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        handleChange={handleChange('email')}
                                         touched={touched}
                                         errors={errors}
                                     />
@@ -80,7 +144,7 @@ function SignupScreen() {
                                         autoCapitalize="none"
                                         secureTextEntry={false}
                                         value={values.mobile}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        handleChange={handleChange('mobile')}
                                         touched={touched}
                                         errors={errors}
                                     />
@@ -88,7 +152,17 @@ function SignupScreen() {
                                         field="password"
                                         placeholder="Password"
                                         value={values.password}
-                                        handleChange={(field: string) => (value: string) => handleChange(field)(value)}
+                                        handleChange={handleChange('password')}
+                                        touched={touched}
+                                        errors={errors}
+                                        secureTextEntry
+                                    />
+                                    <FormInput
+                                        field="password_confirmation"
+                                        placeholder="Password Confirmation"
+                                        autoCapitalize="none"
+                                        value={values.password_confirmation}
+                                        handleChange={handleChange('password_confirmation')}
                                         touched={touched}
                                         errors={errors}
                                         secureTextEntry
@@ -114,7 +188,8 @@ function SignupScreen() {
                                         </Text>
                                     </Text>
                                 </View>
-                            )}
+                                );
+                            }}
                         </Formik>
                     </View>
                 </ImageBackground>

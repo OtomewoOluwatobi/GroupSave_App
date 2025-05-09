@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Toast from 'react-native-toast-message';
+import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
 
 import FormInput from '../components/FormInput';
 
@@ -64,10 +65,12 @@ const SigninScreen: React.FC = () => {
                     routes: [{ name: 'Dashboard' }],
                 });
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'Invalid response from server',
+                // Handle invalid response
+                Dialog.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Singin Error',
+                    textBody: 'Invalid response from server',
+                    button: 'Close',
                 });
             }
         } catch (error: any) {
@@ -79,16 +82,20 @@ const SigninScreen: React.FC = () => {
                     || error.response?.data?.error
                     || 'Invalid credentials';
 
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: errorMessage,
+                // Show error message using Toast or Alert
+                Dialog.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Singin Error',
+                    textBody: errorMessage || 'An unknown error occurred.',
+                    button: 'Close',
                 });
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'Network error. Please check your connection.',
+                // Handle network error or other unexpected errors
+                Dialog.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Singin Error',
+                    textBody: 'Network error. Please check your connection.',
+                    button: 'Close',
                 });
             }
         }
