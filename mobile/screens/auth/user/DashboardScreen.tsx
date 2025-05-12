@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Platform, ActivityIndicator } from "react-native";
 import { Ionicons, Feather, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import axios from 'axios';
+import MenuActionSheet from '../../../components/MenuActionSheet';
+
 
 type RootStackParamList = {
     Home: undefined;
@@ -14,13 +17,40 @@ type RootStackParamList = {
     Dashboard: undefined;
 };
 
-const DashboardScree: React.FC = () => {
+const DashboardScreen: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [activeTab, setActiveTab] = useState('topGroups');
     const [user, setUser] = useState<{ name?: string } | null>(null);
-    const actionSheetRef = React.useRef<ActionSheetRef>(null);
+    const actionSheetRef = React.useRef<ActionSheetRef>(null!);
+    // ...existing state...
+    const [topGroups, setTopGroups] = useState<any[]>([]);
+    const [myGroup, setMyGroup] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Fetch user data on load
+    // Add this function to fetch dashboard data
+    const fetchDashboardData = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const config = {
+                method: 'get',
+                url: 'https://groupsave-main-7jvzme.laravel.cloud/api/user/dashboard',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+
+            const response = await axios.request(config);
+            const data = response.data as { all_groups: any[]; owned_groups: any[] };
+            setTopGroups(data.all_groups || []);
+            setMyGroup(data.owned_groups || []);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -32,7 +62,12 @@ const DashboardScree: React.FC = () => {
                 console.error('Failed to fetch user data:', error);
             }
         };
+        const fetchData = async () => {
+            await fetchDashboardData();
+        };
+
         fetchUserData();
+        fetchData();
     }, []);
 
     const handleSignOut = async () => {
@@ -59,7 +94,7 @@ const DashboardScree: React.FC = () => {
                             <Text style={styles.title}>
                                 Hi {user?.name ? user.name.split(" ")[0].charAt(0).toUpperCase() + user.name.split(" ")[0].slice(1) : ''},
                             </Text>
-                            <Text style={[styles.subtitle, {fontWeight: 'bold'}]}>Welcome back!</Text>
+                            <Text style={[styles.subtitle, { fontWeight: 'bold' }]}>Welcome back!</Text>
                         </View>
                         <TouchableOpacity
                             style={styles.menuButton}
@@ -67,64 +102,21 @@ const DashboardScree: React.FC = () => {
                         >
                             <Feather name="menu" size={24} color="#444" />
                         </TouchableOpacity>
-                        <ActionSheet ref={actionSheetRef}>
-                            <View style={{ padding: 20 }}>
-                                <View style={styles.menuGrid}>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="cash-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Deposite</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="diamond-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Points</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="notifications-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Notifications</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="person-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Profile</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={styles.menuGrid}>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="settings-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Settings</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="help-circle-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Support</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="share-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>Referral</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.menuGridItem}>
-                                        <Ionicons name="document-text-outline" size={24} color="#00a97b" />
-                                        <Text style={styles.menuGridText}>History</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <TouchableOpacity
-                                    style={[styles.menuItem, styles.signOutButton]}
-                                    onPress={handleSignOut}
-                                >
-                                    <Ionicons name="log-out-outline" size={24} color="red" />
-                                    <Text style={styles.signOutText}>Sign Out</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </ActionSheet>
+                        <MenuActionSheet
+                            actionSheetRef={actionSheetRef}
+                            onSignOut={handleSignOut}
+                        />
                     </View>
                 </View>
                 <View style={styles.balanceInfo}>
                     <View style={styles.balanceRow}>
                         <View>
-                            <Text style={styles.balanceLabel}>Target Amount</Text>
-                            <Text style={styles.balanceValue}>₦250,000.00</Text>
+                            <Text style={styles.balanceLabel}>Avilable Balance</Text>
+                            <Text style={styles.balanceValue}>{new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(20500.00)}</Text>
                         </View>
                         <View>
                             <Text style={[styles.balanceLabel, styles.textRight]}>Contributed Amount</Text>
-                            <Text style={[styles.balanceValue, styles.contributedAmount]}>₦120,500.00</Text>
+                            <Text style={[styles.balanceValue, styles.contributedAmount]}>{new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(120500.00)}</Text>
                         </View>
                     </View>
                 </View>
@@ -150,42 +142,50 @@ const DashboardScree: React.FC = () => {
                         </View>
                         {activeTab === 'topGroups' && (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                                {[1, 2, 3].map((item) => (
-                                    <TouchableOpacity key={item} style={[styles.groupCard, shadowStyles]}>
-                                        <Text style={styles.groupTitle}>Group {item}</Text>
-                                        <Text style={styles.groupAmount}>₦50,000.00</Text>
-                                        <View style={styles.groupDetails}>
-                                            <View>
-                                                <Text style={styles.groupDetailLabel}>Duration</Text>
-                                                <Text style={styles.groupDetailValue}>3 months</Text>
+                                {loading ? (
+                                    <ActivityIndicator size="large" color="#00a97b" />
+                                ) : (
+                                    topGroups.map((group) => (
+                                        <TouchableOpacity key={group.id} style={[styles.groupCard, shadowStyles]}>
+                                            <Text style={styles.groupTitle}>{group.title}</Text>
+                                            <Text style={styles.groupAmount}>{new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(group.target_amount)}</Text>
+                                            <View style={styles.groupDetails}>
+                                                <View>
+                                                    <Text style={styles.groupDetailLabel}>Duration</Text>
+                                                    <Text style={styles.groupDetailValue}>{group.total_users} months</Text>
+                                                </View>
+                                                <View>
+                                                    <Text style={styles.groupDetailLabel}>Members</Text>
+                                                    <Text style={styles.groupDetailValue}>{group.members_count}/{group.total_users}</Text>
+                                                </View>
                                             </View>
-                                            <View>
-                                                <Text style={styles.groupDetailLabel}>Members</Text>
-                                                <Text style={styles.groupDetailValue}>12/15</Text>
-                                            </View>
-                                        </View>
-                                    </TouchableOpacity>
-                                ))}
+                                        </TouchableOpacity>
+                                    ))
+                                )}
                             </ScrollView>
                         )}
                         {activeTab === 'myGroup' && (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                                {[1].map((item) => (
-                                    <TouchableOpacity key={item} style={[styles.groupCard, shadowStyles]}>
-                                        <Text style={styles.groupTitle}>My Group {item}</Text>
-                                        <Text style={styles.groupAmount}>₦3,000.00</Text>
-                                        <View style={styles.groupDetails}>
-                                            <View>
-                                                <Text style={styles.groupDetailLabel}>Duration</Text>
-                                                <Text style={styles.groupDetailValue}>2 months</Text>
+                                {loading ? (
+                                    <ActivityIndicator size="large" color="#00a97b" />
+                                ) : (
+                                    myGroup.map((group) => (
+                                        <TouchableOpacity key={group.id} style={[styles.groupCard, shadowStyles]}>
+                                            <Text style={styles.groupTitle}>{group.title}</Text>
+                                            <Text style={styles.groupAmount}>{new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(group.target_amount)}</Text>
+                                            <View style={styles.groupDetails}>
+                                                <View>
+                                                    <Text style={styles.groupDetailLabel}>Duration</Text>
+                                                    <Text style={styles.groupDetailValue}>{group.total_users} months</Text>
+                                                </View>
+                                                <View>
+                                                    <Text style={styles.groupDetailLabel}>Members</Text>
+                                                    <Text style={styles.groupDetailValue}>{group.members_count}/{group.total_users}</Text>
+                                                </View>
                                             </View>
-                                            <View>
-                                                <Text style={styles.groupDetailLabel}>Members</Text>
-                                                <Text style={styles.groupDetailValue}>8/10</Text>
-                                            </View>
-                                        </View>
-                                    </TouchableOpacity>
-                                ))}
+                                        </TouchableOpacity>
+                                    ))
+                                )}
                                 <TouchableOpacity style={[styles.addGroupButton, shadowStyles]}>
                                     <MaterialIcons name="format-list-bulleted-add" size={30} color="#fff" />
                                 </TouchableOpacity>
@@ -209,7 +209,7 @@ const DashboardScree: React.FC = () => {
                                             <Text style={styles.transactionDate}>Oct 12, 2023</Text>
                                         </View>
                                     </View>
-                                    <Text style={styles.transactionAmount}>+₦15,000</Text>
+                                    <Text style={styles.transactionAmount}>+£15,000</Text>
                                 </View>
                             ))}
                         </ScrollView>
@@ -297,4 +297,4 @@ const styles = StyleSheet.create({
     transactionAmount: { fontSize: 16, fontWeight: '600', color: '#00a97b' },
 });
 
-export default DashboardScree;
+export default DashboardScreen;

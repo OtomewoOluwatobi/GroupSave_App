@@ -9,7 +9,7 @@ import { AlertNotificationRoot } from 'react-native-alert-notification';
 import HomeScreen from './screens/HomeScreen';
 import SigninScreen from './screens/SigninScreen';
 import SignupScreen from './screens/SignupScreen';
-import DashboardScreen from './screens/auth/user/DashboardScree';
+import DashboardScreen from './screens/auth/user/DashboardScreen';
 
 type RootStackParamList = {
   Home: undefined;
