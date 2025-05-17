@@ -22,7 +22,6 @@ type RootStackParamList = {
 };
 import * as Yup from 'yup';
 import FormInput from '../components/FormInput';
-import Toast from 'react-native-toast-message';
 
 const validationSchema = Yup.object({
     name: Yup.string().required('Full name is required'),
@@ -67,8 +66,6 @@ function SignupScreen() {
                         textBody: response.data.message || 'Your account has been created.',
                         button: 'Close',
                     });
-                    // Optional: Navigate to signin after successful registration
-                    // navigation.navigate('Signin');
                 } else if (response.status === 400) {
                     Dialog.show({
                         type: ALERT_TYPE.DANGER,

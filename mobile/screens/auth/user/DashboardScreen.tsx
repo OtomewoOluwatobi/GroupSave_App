@@ -24,6 +24,7 @@ type RootStackParamList = {
     Signin: undefined;
     Signup: undefined;
     Dashboard: undefined;
+    CreateGroup: undefined;
 };
 
 const DashboardScreen: React.FC = () => {
@@ -128,7 +129,7 @@ const DashboardScreen: React.FC = () => {
                         <TouchableOpacity style={styles.menuButton} onPress={() => actionSheetRef.current?.show()}>
                             <Feather name="menu" size={24} color="#444" />
                         </TouchableOpacity>
-                        <MenuActionSheet actionSheetRef={actionSheetRef} onSignOut={handleSignOut} />
+                        <MenuActionSheet actionSheetRef={actionSheetRef as React.RefObject<ActionSheetRef>} onSignOut={handleSignOut} />
                     </View>
                 </View>
                 <View style={styles.balanceInfo}>
@@ -177,7 +178,7 @@ const DashboardScreen: React.FC = () => {
                                 ) : (
                                     myGroup.map(renderGroupCard)
                                 )}
-                                <TouchableOpacity style={[styles.addGroupButton, shadowStyles]}>
+                                <TouchableOpacity onPress={() => navigation.navigate('CreateGroup')} style={[styles.addGroupButton, shadowStyles]}>
                                     <MaterialIcons name="format-list-bulleted-add" size={30} color="#fff" />
                                 </TouchableOpacity>
                             </ScrollView>

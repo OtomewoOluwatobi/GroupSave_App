@@ -11,6 +11,7 @@ type FormInputProps = {
     handleChange?: (value: string) => void;
     errors?: any;
     touched?: any;
+    inputmode?: 'none' | 'text' | 'decimal' | 'numeric' | 'search' | 'email' | 'tel';
 };
 
 const FormInput: React.FC<FormInputProps> = ({

@@ -10,12 +10,14 @@ import HomeScreen from './screens/HomeScreen';
 import SigninScreen from './screens/SigninScreen';
 import SignupScreen from './screens/SignupScreen';
 import DashboardScreen from './screens/auth/user/DashboardScreen';
+import CreateGroupScreen from './screens/auth/user/groups/CreateGroupScreen';
 
 type RootStackParamList = {
   Home: undefined;
   Signin: undefined;
   Signup: undefined;
   Dashboard: undefined;
+  CreateGroup: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -67,7 +69,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{ headerShown: false }}
-            initialRouteName="Home"
+            initialRouteName="CreateGroup"
           >
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Signin" component={SigninScreen} />
@@ -75,6 +77,11 @@ export default function App() {
             <Stack.Screen
               name="Dashboard"
               component={DashboardScreen}
+              options={{ gestureEnabled: false }}
+            />
+            <Stack.Screen
+              name="CreateGroup"
+              component={CreateGroupScreen}
               options={{ gestureEnabled: false }}
             />
           </Stack.Navigator>
