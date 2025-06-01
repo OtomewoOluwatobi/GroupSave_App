@@ -69,7 +69,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{ headerShown: false }}
-            initialRouteName="CreateGroup"
+            initialRouteName="Dashboard"
           >
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Signin" component={SigninScreen} />

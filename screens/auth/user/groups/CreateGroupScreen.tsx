@@ -85,7 +85,7 @@ const CreateGroupScreen = () => {
 
     const handleAddEmail = useCallback(
         (values: GroupFormValues, setFieldValue: (field: keyof GroupFormValues, value: any, shouldValidate?: boolean) => void) => {
-            if (!newEmail.includes('@')) return;
+            if (!newEmail.includes('@')) { return; }
             if (values.membersEmails.includes(newEmail)) {
                 setMemberError('This email has already been added.');
             } else if (values.membersEmails.length >= parseInt(values.totalUsers)) {
@@ -113,46 +113,81 @@ const CreateGroupScreen = () => {
         };
 
         try {
+            setSubmitting(true);
             const apiUrl = 'https://groupsave-main-7jvzme.laravel.cloud/api';
             const token = await AsyncStorage.getItem('token');
+
+            if (!token) {
+                Dialog.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Authentication Error',
+                    textBody: 'Please login again to continue',
+                    button: 'Close',
+                });
+                navigation.navigate('Signin');
+                return;
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+            const { title, totalUsers, targetAmount, expectedStartDate, payment_out_day, membersEmails } = values;
+            const payload = {
+                title: title,
+                total_users: parseInt(totalUsers),
+                target_amount: parseFloat(targetAmount),
+                expected_start_date: expectedStartDate,
+                payment_out_day: parseInt(payment_out_day),
+                members_emails: membersEmails,
+            };
+
             const response = await fetch(`${apiUrl}/user/group/store`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify(groupData),
+                body: JSON.stringify(payload),
+                signal: controller.signal,
             });
 
-            console.log('Response:', response.status);
-            // if (!response.ok) {
-            //     const errorData = await response.json();
-            //     console.error('Error response:', errorData);
-            //     Dialog.show({
-            //         type: ALERT_TYPE.DANGER,
-            //         title: 'Failed to create group',
-            //         textBody: errorData.message || 'An error occurred while creating the group.',
-            //         button: 'Close',
-            //     });
-            //     return;
-            // }
-            // // Uncomment the following lines if you want to handle successful registration
-            // // This part is commented out because it seems to be related to user registration, not group creation
-            // if (response.status === 200 || response.status === 201) {
-            //     const data = await response.json();
-            //     Dialog.show({
-            //         type: ALERT_TYPE.SUCCESS,
-            //         title: 'Group Created',
-            //         textBody: data.message || 'Your group has been created successfully.',
-            //         button: 'Close',
-            //     });
-            //     navigation.navigate('Dashboard'); // Navigate to the group list screen
-            // }
-            // resetForm();
+            clearTimeout(timeoutId);
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                Dialog.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Failed to create group',
+                    textBody: data.message || 'An error occurred while creating the group.',
+                    button: 'Close',
+                });
+                return;
+            }
+
+            if (response.status === 201) {
+                Dialog.show({
+                    type: ALERT_TYPE.SUCCESS,
+                    title: 'Group Created',
+                    textBody: data.message || 'Your group has been created successfully.',
+                    button: 'Close',
+                });
+                resetForm();
+                navigation.navigate('Dashboard');
+            }
+
         } catch (error) {
             console.error('Error creating group:', error);
+            Dialog.show({
+                type: ALERT_TYPE.DANGER,
+                title: 'Network Error',
+                textBody: error instanceof Error ? error.message : 'Unable to connect to the server',
+                button: 'Close',
+            });
+        } finally {
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     return (

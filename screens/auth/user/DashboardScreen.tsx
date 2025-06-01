@@ -110,6 +110,42 @@ const DashboardScreen: React.FC = () => {
         </TouchableOpacity>
     );
 
+    const renderMyGroupCard = (group: any) => (
+        <TouchableOpacity key={group.id} style={[styles.groupCard, shadowStyles]}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.groupTitle}>{group.group.title}</Text>
+                <View style={{ marginLeft: "auto", flexDirection: "row", alignItems: "center" }}>
+                    {group.is_active == false && (
+                        <Ionicons
+                            name="warning-outline"
+                            size={14}
+                            color="orange"
+                            style={{ marginRight: group.role === "member" ? 5 : 0 }}
+                        />
+                    )}
+                    {group.role === "admin" && (
+                        <Ionicons name="shield-checkmark" size={14} color="#fff" />
+                    )}
+                </View>
+            </View>
+            <Text style={styles.groupAmount}>
+                {new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(group.group.target_amount)}
+            </Text>
+            <View style={styles.groupDetails}>
+                <View>
+                    <Text style={styles.groupDetailLabel}>Duration</Text>
+                    <Text style={styles.groupDetailValue}>{group.group.total_users} months</Text>
+                </View>
+                <View>
+                    <Text style={styles.groupDetailLabel}>Members</Text>
+                    <Text style={styles.groupDetailValue}>
+                        {group.group.members_count}/{group.group.total_users}
+                    </Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
     return (
         <SafeAreaProvider>
             <StatusBar barStyle="dark-content" />
@@ -148,17 +184,18 @@ const DashboardScreen: React.FC = () => {
                         </View>
                     </View>
                 </View>
+                <Text style={[styles.sectionTitle, styles.boldText]}>Groups</Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View>
                         <View style={styles.tabHeaders}>
                             <TouchableOpacity style={styles.tabButton} onPress={() => setActiveTab("topGroups")}>
                                 <Text style={[styles.tabText, activeTab === "topGroups" && styles.activeTabText]}>
-                                    Top Groups
+                                    Explore
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.tabButton} onPress={() => setActiveTab("myGroup")}>
                                 <Text style={[styles.tabText, activeTab === "myGroup" && styles.activeTabText]}>
-                                    My Groups
+                                    A Member
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -176,7 +213,7 @@ const DashboardScreen: React.FC = () => {
                                 {loading ? (
                                     <ActivityIndicator size="large" color="#00a97b" />
                                 ) : (
-                                    myGroup.map(renderGroupCard)
+                                    myGroup.map(renderMyGroupCard)
                                 )}
                                 <TouchableOpacity onPress={() => navigation.navigate('CreateGroup')} style={[styles.addGroupButton, shadowStyles]}>
                                     <MaterialIcons name="format-list-bulleted-add" size={30} color="#fff" />
