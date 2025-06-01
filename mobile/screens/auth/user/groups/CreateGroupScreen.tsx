@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Alert,
     ScrollView,
@@ -13,22 +13,31 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Formik } from 'formik';
+import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ALERT_TYPE, Dialog } from 'react-native-alert-notification';
 
 import FormInput from '../../../../components/FormInput';
-import { FormikHelpers } from 'formik';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
 
-const initialValues = {
+interface GroupFormValues {
+    title: string;
+    totalUsers: string;
+    targetAmount: string;
+    expectedStartDate: string;
+    payment_out_day: string;
+    membersEmails: string[];
+}
+
+const initialValues: GroupFormValues = {
     title: '',
     totalUsers: '',
     targetAmount: '',
     expectedStartDate: '',
     payment_out_day: '',
-    membersEmails: [] as string[],
+    membersEmails: [],
 };
 
 const validationSchema = Yup.object().shape({
@@ -51,6 +60,8 @@ const CreateGroupScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const [newEmail, setNewEmail] = useState('');
     const [memberError, setMemberError] = useState('');
+    const [userEmail, setUserEmail] = useState<string>('');
+    const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -58,6 +69,11 @@ const CreateGroupScreen = () => {
                 const userData = await AsyncStorage.getItem('user');
                 if (!userData) {
                     navigation.navigate('Signin');
+                } else {
+                    const parsedData = JSON.parse(userData);
+                    if (parsedData?.email) {
+                        setUserEmail(parsedData.email);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -65,71 +81,78 @@ const CreateGroupScreen = () => {
         };
 
         fetchUserData();
-    }, []);
+    }, [navigation]);
 
-    interface GroupFormValues {
-        title: string;
-        totalUsers: string;
-        targetAmount: string;
-        expectedStartDate: string;
-        payment_out_day: string;
-        membersEmails: string[];
-    }
-
-    type SetFieldValueType = (
-        field: keyof GroupFormValues,
-        value: any,
-        shouldValidate?: boolean
-    ) => void;
-
-    const handleAddEmail = (
-        values: GroupFormValues,
-        setFieldValue: SetFieldValueType
-    ): void => {
-        if (!newEmail.includes('@')) return;
-
-        if (values.membersEmails.includes(newEmail)) {
-            setMemberError('This email has already been added.');
-        } else if (values.membersEmails.length >= parseInt(values.totalUsers)) {
-            setMemberError('Cannot add more members. Maximum limit reached.');
-        } else {
-            setFieldValue('membersEmails', [...values.membersEmails, newEmail]);
-            setNewEmail('');
-        }
-    };
-
-    interface GroupFormValues {
-        title: string;
-        totalUsers: string;
-        targetAmount: string;
-        expectedStartDate: string;
-        payment_out_day: string;
-        membersEmails: string[];
-    }
+    const handleAddEmail = useCallback(
+        (values: GroupFormValues, setFieldValue: (field: keyof GroupFormValues, value: any, shouldValidate?: boolean) => void) => {
+            if (!newEmail.includes('@')) return;
+            if (values.membersEmails.includes(newEmail)) {
+                setMemberError('This email has already been added.');
+            } else if (values.membersEmails.length >= parseInt(values.totalUsers)) {
+                setMemberError('Cannot add more members. Maximum limit reached.');
+            } else {
+                setFieldValue('membersEmails', [...values.membersEmails, newEmail]);
+                setNewEmail('');
+                setMemberError('');
+            }
+        },
+        [newEmail]
+    );
 
     const handleFormSubmit = async (
         values: GroupFormValues,
         { setSubmitting, resetForm }: FormikHelpers<GroupFormValues>
     ): Promise<void> => {
+        const groupData = {
+            title: values.title,
+            totalUsers: parseInt(values.totalUsers),
+            targetAmount: parseFloat(values.targetAmount),
+            expectedStartDate: values.expectedStartDate,
+            payment_out_day: parseInt(values.payment_out_day),
+            membersEmails: values.membersEmails,
+        };
+
         try {
-            const response = await fetch('https://api.example.com/groups', {
+            const apiUrl = 'https://groupsave-main-7jvzme.laravel.cloud/api';
+            const token = await AsyncStorage.getItem('token');
+            const response = await fetch(`${apiUrl}/user/group/store`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(values),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(groupData),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'An error occurred while creating the group.');
-            }
-
-            resetForm();
-            Alert.alert('Success', 'Group created successfully!');
-        } catch (error: any) {
-            Alert.alert('Error', error.message || 'Failed to create group.');
-        } finally {
-            setSubmitting(false);
+            console.log('Response:', response.status);
+            // if (!response.ok) {
+            //     const errorData = await response.json();
+            //     console.error('Error response:', errorData);
+            //     Dialog.show({
+            //         type: ALERT_TYPE.DANGER,
+            //         title: 'Failed to create group',
+            //         textBody: errorData.message || 'An error occurred while creating the group.',
+            //         button: 'Close',
+            //     });
+            //     return;
+            // }
+            // // Uncomment the following lines if you want to handle successful registration
+            // // This part is commented out because it seems to be related to user registration, not group creation
+            // if (response.status === 200 || response.status === 201) {
+            //     const data = await response.json();
+            //     Dialog.show({
+            //         type: ALERT_TYPE.SUCCESS,
+            //         title: 'Group Created',
+            //         textBody: data.message || 'Your group has been created successfully.',
+            //         button: 'Close',
+            //     });
+            //     navigation.navigate('Dashboard'); // Navigate to the group list screen
+            // }
+            // resetForm();
+        } catch (error) {
+            console.error('Error creating group:', error);
         }
+        setSubmitting(false);
     };
 
     return (
@@ -176,7 +199,15 @@ const CreateGroupScreen = () => {
                                                 placeholder="Total Users"
                                                 keyboardType="numeric"
                                                 value={values.totalUsers}
-                                                handleChange={handleChange('totalUsers')}
+                                                handleChange={(value) => {
+                                                    setFieldValue('totalUsers', value);
+                                                    if (userEmail && values.membersEmails[0] !== userEmail) {
+                                                        setFieldValue(
+                                                            'membersEmails',
+                                                            [userEmail, ...values.membersEmails.filter((e) => e !== userEmail)]
+                                                        );
+                                                    }
+                                                }}
                                                 touched={touched}
                                                 errors={errors}
                                                 inputmode="numeric"
@@ -197,27 +228,58 @@ const CreateGroupScreen = () => {
                                         </View>
                                     </View>
 
-                                    <Text style={styles.inputLabel}>Expected Start Date</Text>
-                                    <FormInput
-                                        field="expectedStartDate"
-                                        placeholder="Start Date"
-                                        value={values.expectedStartDate}
-                                        handleChange={handleChange('expectedStartDate')}
-                                        touched={touched}
-                                        errors={errors}
-                                        inputmode="text"
-                                    />
-
-                                    <Text style={styles.inputLabel}>Payment Day</Text>
-                                    <FormInput
-                                        field="payment_out_day"
-                                        placeholder="Payment Day"
-                                        value={values.payment_out_day}
-                                        handleChange={handleChange('payment_out_day')}
-                                        touched={touched}
-                                        errors={errors}
-                                        inputmode="numeric"
-                                    />
+                                    <View style={styles.rowBetween}>
+                                        <View style={{ flex: 1.2, marginRight: 8 }}>
+                                            <Text style={styles.inputLabel}>Expected Start Date</Text>
+                                            <TouchableOpacity
+                                                onPress={() => setShowDatePicker(true)}
+                                                style={styles.dateInputContainer}
+                                            >
+                                                <Text style={styles.dateInputText}>
+                                                    {values.expectedStartDate || 'Select Start Date'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            {showDatePicker && (
+                                                <DateTimePicker
+                                                    value={values.expectedStartDate ? new Date(values.expectedStartDate) : new Date()}
+                                                    mode="date"
+                                                    display="default"
+                                                    onChange={(event, selectedDate) => {
+                                                        setShowDatePicker(false);
+                                                        if (selectedDate) {
+                                                            setFieldValue(
+                                                                'expectedStartDate',
+                                                                selectedDate.toISOString().split('T')[0]
+                                                            );
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.inputLabel}>Payment Day</Text>
+                                            <FormInput
+                                                field="payment_out_day"
+                                                placeholder="Payment Day"
+                                                value={values.payment_out_day}
+                                                handleChange={(value) => {
+                                                    const numericValue = value.replace(/[^0-9]/g, '');
+                                                    let intVal = parseInt(numericValue, 10);
+                                                    if (!isNaN(intVal)) {
+                                                        if (intVal < 1) intVal = 1;
+                                                        else if (intVal > 28) intVal = 28;
+                                                        setFieldValue('payment_out_day', intVal.toString());
+                                                    } else {
+                                                        setFieldValue('payment_out_day', '');
+                                                    }
+                                                }}
+                                                touched={touched}
+                                                errors={errors}
+                                                inputmode="numeric"
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                    </View>
 
                                     <Text style={styles.inputLabel}>Members Emails</Text>
                                     <Text style={styles.subNote}>
@@ -246,11 +308,15 @@ const CreateGroupScreen = () => {
                                                     errors={errors}
                                                     inputmode="email"
                                                 />
-                                                <Text style={styles.errorText}>{memberError}</Text>
+                                                {memberError ? <Text style={styles.errorText}>{memberError}</Text> : null}
                                             </View>
                                             <View style={styles.flexOne}>
                                                 <TouchableOpacity
-                                                    style={[styles.button, isSubmitting && styles.disabledButton, styles.blackButton]}
+                                                    style={[
+                                                        styles.button,
+                                                        isSubmitting && styles.disabledButton,
+                                                        styles.blackButton,
+                                                    ]}
                                                     onPress={() => handleAddEmail(values, setFieldValue)}
                                                 >
                                                     <Text style={styles.buttonText}>Add</Text>
@@ -325,6 +391,15 @@ const styles = StyleSheet.create({
         color: '#666',
         marginTop: 5,
     },
+    dateInputContainer: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        paddingVertical: 15,
+        marginTop: 10,
+        justifyContent: 'center',
+    },
     emailBox: {
         flexDirection: 'row',
         backgroundColor: '#fff',
@@ -381,7 +456,10 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 5,
     },
+    dateInputText: {
+        fontSize: 16,
+        color: '#444',
+    },
 });
 
 export default CreateGroupScreen;
-
