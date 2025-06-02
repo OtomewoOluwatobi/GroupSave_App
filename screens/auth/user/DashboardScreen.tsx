@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
     View,
     Text,
@@ -28,6 +28,7 @@ type RootStackParamList = {
 };
 
 const DashboardScreen: React.FC = () => {
+    // Navigation and local state hooks
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [activeTab, setActiveTab] = useState("topGroups");
     const [user, setUser] = useState<{ name?: string } | null>(null);
@@ -36,6 +37,7 @@ const DashboardScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const actionSheetRef = useRef<ActionSheetRef>(null);
 
+    // Fetch user info and dashboard data on component mount
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -59,11 +61,11 @@ const DashboardScreen: React.FC = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 };
-
                 const response = await axios.request(config);
-                const data = response.data as { all_groups: any[]; owned_groups: any[] };
-                setTopGroups(data.all_groups || []);
-                setMyGroup(data.owned_groups || []);
+                // Destructure and set data if available by casting response.data to a known type
+                const { all_groups = [], owned_groups = [] } = response.data as { all_groups?: any[]; owned_groups?: any[] };
+                setTopGroups(all_groups);
+                setMyGroup(owned_groups);
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
@@ -75,6 +77,7 @@ const DashboardScreen: React.FC = () => {
         fetchDashboardData();
     }, []);
 
+    // Handle sign-out process by clearing token and user, then navigating to Signin
     const handleSignOut = async () => {
         actionSheetRef.current?.hide();
         try {
@@ -89,7 +92,8 @@ const DashboardScreen: React.FC = () => {
         }
     };
 
-    const renderGroupCard = (group: any) => (
+    // Render a card for each group from topGroups list
+    const renderGroupCard = useCallback((group: any) => (
         <TouchableOpacity key={group.id} style={[styles.groupCard, shadowStyles]}>
             <Text style={styles.groupTitle}>{group.title}</Text>
             <Text style={styles.groupAmount}>
@@ -108,14 +112,15 @@ const DashboardScreen: React.FC = () => {
                 </View>
             </View>
         </TouchableOpacity>
-    );
+    ), []);
 
-    const renderMyGroupCard = (group: any) => (
+    // Render a card for each group in which the user is a member
+    const renderMyGroupCard = useCallback((group: any) => (
         <TouchableOpacity key={group.id} style={[styles.groupCard, shadowStyles]}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={styles.groupTitle}>{group.group.title}</Text>
                 <View style={{ marginLeft: "auto", flexDirection: "row", alignItems: "center" }}>
-                    {group.is_active == false && (
+                    {!group.is_active && (
                         <Ionicons
                             name="warning-outline"
                             size={14}
@@ -144,15 +149,17 @@ const DashboardScreen: React.FC = () => {
                 </View>
             </View>
         </TouchableOpacity>
-    );
+    ), []);
 
     return (
         <SafeAreaProvider>
+            {/* Set the default status bar style */}
             <StatusBar barStyle="dark-content" />
             <View style={styles.container}>
                 <View style={styles.header}>
                     <View style={styles.headerContent}>
                         <View style={styles.headerTextContainer}>
+                            {/* Greeting the user */}
                             <Text style={styles.title}>
                                 Hi{" "}
                                 {user?.name
@@ -162,12 +169,14 @@ const DashboardScreen: React.FC = () => {
                             </Text>
                             <Text style={[styles.subtitle, { fontWeight: "bold" }]}>Welcome back!</Text>
                         </View>
+                        {/* Menu button opens the action sheet */}
                         <TouchableOpacity style={styles.menuButton} onPress={() => actionSheetRef.current?.show()}>
                             <Feather name="menu" size={24} color="#444" />
                         </TouchableOpacity>
                         <MenuActionSheet actionSheetRef={actionSheetRef as React.RefObject<ActionSheetRef>} onSignOut={handleSignOut} />
                     </View>
                 </View>
+                {/* Display user's balance information */}
                 <View style={styles.balanceInfo}>
                     <View style={styles.balanceRow}>
                         <View>
@@ -187,6 +196,7 @@ const DashboardScreen: React.FC = () => {
                 <Text style={[styles.sectionTitle, styles.boldText]}>Groups</Text>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View>
+                        {/* Tab Headers for switching views */}
                         <View style={styles.tabHeaders}>
                             <TouchableOpacity style={styles.tabButton} onPress={() => setActiveTab("topGroups")}>
                                 <Text style={[styles.tabText, activeTab === "topGroups" && styles.activeTabText]}>
@@ -199,6 +209,7 @@ const DashboardScreen: React.FC = () => {
                                 </Text>
                             </TouchableOpacity>
                         </View>
+                        {/* Display groups list based on active tab */}
                         {activeTab === "topGroups" && (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
                                 {loading ? (
@@ -215,12 +226,14 @@ const DashboardScreen: React.FC = () => {
                                 ) : (
                                     myGroup.map(renderMyGroupCard)
                                 )}
+                                {/* Button to create a new group */}
                                 <TouchableOpacity onPress={() => navigation.navigate('CreateGroup')} style={[styles.addGroupButton, shadowStyles]}>
                                     <MaterialIcons name="format-list-bulleted-add" size={30} color="#fff" />
                                 </TouchableOpacity>
                             </ScrollView>
                         )}
                     </View>
+                    {/* Recent Transactions Section */}
                     <View style={styles.recentTransactions}>
                         <Text style={[styles.sectionTitle, styles.boldText]}>Recent Transactions</Text>
                         <ScrollView style={styles.transactionsList} showsVerticalScrollIndicator={false}>
@@ -249,6 +262,7 @@ const DashboardScreen: React.FC = () => {
     );
 };
 
+// Cross-platform shadow styles
 const shadowStyles = Platform.select({
     ios: {
         shadowColor: "#000",
@@ -259,6 +273,7 @@ const shadowStyles = Platform.select({
     android: { elevation: 5 },
 });
 
+// Component styles
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#e8f3f5" },
     header: {
