@@ -103,7 +103,7 @@ const DashboardScreen: React.FC = () => {
                 <View>
                     <Text style={styles.groupDetailLabel}>Members</Text>
                     <Text style={styles.groupDetailValue}>
-                        {group.members_count}/{group.total_users}
+                        {group.active_members_count}/{group.total_users}
                     </Text>
                 </View>
             </View>
@@ -139,7 +139,7 @@ const DashboardScreen: React.FC = () => {
                 <View>
                     <Text style={styles.groupDetailLabel}>Members</Text>
                     <Text style={styles.groupDetailValue}>
-                        {group.group.members_count}/{group.group.total_users}
+                        {group.group.active_members_count}/{group.group.total_users}
                     </Text>
                 </View>
             </View>
